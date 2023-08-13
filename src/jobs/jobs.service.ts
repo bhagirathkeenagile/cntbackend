@@ -34,6 +34,8 @@ export class JobsService {
     message: string;
   }> {
     try {
+      console.log('mapId-->', mapId);
+      console.log('mapId-->', mapId);
       const map = await this.prisma.mappingData.update({
         where: {
           id: mapId,
@@ -43,10 +45,10 @@ export class JobsService {
         },
       });
       const accountsFields = JSON.parse(map.mapping).filter(
-        (a) => a.table === 'accounts' && a.mapped === 'Mapped',
+        (a) => a.table === 'Accounts' && a.mapped === 'Mapped',
       );
       const contactsFields = JSON.parse(map.mapping).filter(
-        (a) => a.table === 'contacts' && a.mapped === 'Mapped',
+        (a) => a.table === 'Contacts' && a.mapped === 'Mapped',
       );
 
       const readExcelFile = await this.excelService.readExcelFile(map.filePath);
@@ -61,7 +63,7 @@ export class JobsService {
           accountsData[
             cleanedcolumName.charAt(0).toUpperCase() +
               cleanedcolumName.slice(1).trim()
-          ] = row[field.excelHeader].toString();
+          ] = row[field.excelHeader]?.toString();
         });
         const contactsData: any = {};
         contactsFields.map((field) => {
@@ -72,10 +74,13 @@ export class JobsService {
           contactsData[
             cleanedcolumName.charAt(0).toUpperCase() +
               cleanedcolumName.slice(1).trim()
-          ] = row[field.excelHeader].toString();
+          ] = row[field.excelHeader]?.toString();
         });
-        if (map.action === 'Insert Only') {
+
+        if (map.action === 'Insert Only' || map.action === 'Insert') {
           contactsData.insert_map_history_id = map.id;
+          console.log('accountsData->', accountsData);
+          console.log('contactsData->', contactsData);
           /**
            * check if source table is account
            * TODO @Bhagirath: Map Fields

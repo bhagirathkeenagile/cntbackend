@@ -306,6 +306,7 @@ model MappingData {
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
   isDeleted  Boolean  @default(false)
+  isInsert   Boolean  @default(false)
 }
 
 model Jobs {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, isNotEmpty } from 'class-validator';
 
 export class CreateMapDto {
   @IsString()
@@ -24,4 +24,8 @@ export class CreateMapDto {
   @IsString()
   @IsNotEmpty()
   action: string;
+
+  mapId: number;
+
+  isInsert: boolean;
 }

@@ -36,9 +36,14 @@ export class MapService {
 
     // save mapping data to database
     console.log('data------[ line 39 ]--->', data);
-    const mappingData = await this.prisma.mappingData.create({
-      data: {
-        /**
+    console.log('data.isInsert->', data.isInsert);
+    let mapid: number = null;
+    if (data.isInsert === true) {
+      console.log('I am here 11');
+      try {
+        const mappingData = await this.prisma.mappingData.create({
+          data: {
+            /**
          * spread operator is used to merge two objects
          * its equivalent to 
          * { name: data.name,
@@ -49,28 +54,50 @@ export class MapService {
           action: data.action
         }
          */
-        ...data,
-        ...{
-          created_at: new Date(),
-          isDeleted: false,
+            ...data,
+            ...{
+              created_at: new Date(),
+              isDeleted: false,
+            },
+          },
+        });
+
+        console.log('mappingData->', mappingData);
+        mapid = mappingData.id;
+      } catch (error) {
+        // Handle the error here
+        console.error('Error creating mappingData:', error.message);
+        console.log('mappingData->', error.message);
+        throw error;
+      }
+    } else {
+      console.log('I am here 22');
+      console.log('I am here 22-->', data.filePath);
+      console.log('I am here 22-->', typeof data.mapId);
+
+      await this.prisma.mappingData.update({
+        where: {
+          id: +data.mapId,
         },
-      },
-    });
+        data: {
+          filePath: data.filePath,
+        },
+      });
+    }
+
     /**
      * if excel file has more than IMMEDIATE_ROWS_TO_PROCESS rows then
      * create a job and send mapping data to job
      */
     if (countExcelRows > IMMEDIATE_ROWS_TO_PROCESS) {
       await this.jobsService.sendDataToJob({
-        mapId: mappingData.id,
+        mapId: +mapid,
         status: 'PENDING',
       });
       return { errorCode: 'NO_ERROR' };
     }
     // process contact rows immediately
-    const mapStatus = await this.jobsService.ProcessContactRowsImmediately(
-      mappingData.id,
-    );
+    const mapStatus = await this.jobsService.ProcessContactRowsImmediately(2);
     return { errorCode: mapStatus.errorCode };
   }
 
